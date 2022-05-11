@@ -1,0 +1,49 @@
+name: Run unit tests and dockerize user service
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker build
+        run: docker build -t '${{secrets.DOCKER_HUB_USERNAME}}'/shop-api-user-service:'${{github.sha}}' .
+
+      - name: Docker login
+        run: docker login --username '${{secrets.DOCKER_HUB_USERNAME}}' --password '${{secrets.DOCKER_HUB_PASSWORD}}'
+
+      - name: Push docker image to dockerhub
+        run: docker push '${{secrets.DOCKER_HUB_USERNAME}}'/shop-api-user-service:'${{github.sha}}'
