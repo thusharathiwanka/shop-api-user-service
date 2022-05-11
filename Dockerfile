@@ -20,7 +20,7 @@ RUN if [ "$NODE_ENV" = "development" ]; \
 COPY . .
 
 # setting up the port
-ENV PORT 5001
+ENV PORT 5002
 
 # exposeing port
 EXPOSE $PORT
