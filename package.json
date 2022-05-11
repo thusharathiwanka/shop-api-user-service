@@ -5,7 +5,8 @@
 	"main": "server.js",
 	"scripts": {
 		"watch": "nodemon -L server.js",
-		"start": "node server.js"
+		"start": "node server.js",
+		"test": "jest"
 	},
 	"keywords": [],
 	"author": "Thushara Thiwanka <thusharathiwanka123@gmail.com>",
@@ -20,6 +21,9 @@
 		"mongoose": "^6.3.2"
 	},
 	"devDependencies": {
-		"nodemon": "^2.0.16"
+		"axios": "^0.27.2",
+		"jest": "^28.1.0",
+		"nodemon": "^2.0.16",
+		"supertest": "^6.2.3"
 	}
 }
