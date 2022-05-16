@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop-api-user-service
+  labels:
+    app: shop-api-user-service
+spec:
+  selector:
+    matchLabels:
+      app: shop-api-user-service
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: shop-api-user-service
+    spec:
+      containers:
+        - name: shop-api-user-service
+          image: thusharathiwanka/shop-api-user-service:latest
+          ports:
+            - containerPort: 5002

@@ -6,8 +6,16 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: autopilot-cluster-3
+  GAR_LOCATION: us-central1
+  GKE_ZONE: us-central1
+  DEPLOYMENT_NAME: shop-api-user-service
+
 jobs:
   test:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
 
     strategy:
@@ -32,6 +40,7 @@ jobs:
         run: npm test
 
   docker:
+    name: Build, Publish Docker Image
     needs: test
     runs-on: ubuntu-latest
 
@@ -52,3 +61,35 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/shop-api-user-service
+  deploy:
+    name: Deploy to GKE
+    runs-on: ubuntu-latest
+    needs: [docker]
+    environment: production
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - id: "auth"
+        uses: "google-github-actions/auth@v0"
+        with:
+          credentials_json: "${{ secrets.GKE_SA_KEY }}"
+
+        # Setup gcloud CLI
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - run: |-
+          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+      # Deploy sample image to the GKE cluster
+      - name: Deploy
+        run: |-
+          kubectl apply -f ./k8s/deployment.yml
+          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          kubectl get services -o wide

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shop-api-user-service
+  labels:
+    app: shop-api-user-service
+spec:
+  selector:
+    app: shop-api-user-service
+  ports:
+    - protocol: TCP
+      port: 5002
+      targetPort: 5002
+  type: LoadBalancer
