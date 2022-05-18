@@ -17,26 +17,21 @@ jobs:
   test:
     name: Run Unit Tests
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [12.x, 14.x, 16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
-
-      - name: Run unit tests
+      - name: Run Unit Tests
         run: npm test
 
   docker:
@@ -61,12 +56,12 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/shop-api-user-service
+
   deploy:
     name: Deploy to GKE
     runs-on: ubuntu-latest
     needs: [docker]
     environment: production
-
     permissions:
       contents: "read"
       id-token: "write"
@@ -74,21 +69,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
       - id: "auth"
         uses: "google-github-actions/auth@v0"
         with:
           credentials_json: "${{ secrets.GKE_SA_KEY }}"
-
-        # Setup gcloud CLI
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
-
-      # Get the GKE credentials so we can deploy to the cluster
-      - run: |-
+      - name: Get the GKE Credentials
+        run: |-
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
-      # Deploy sample image to the GKE cluster
-      - name: Deploy
+      - name: Deploy to GKE
         run: |-
           kubectl delete -f ./k8s/deployment.yml && kubectl apply -f ./k8s/deployment.yml
           kubectl apply -f ./k8s/service.yml
