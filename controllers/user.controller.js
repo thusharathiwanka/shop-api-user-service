@@ -76,7 +76,7 @@ const saveUser = async (req, res) => {
 const getUsers = async (req, res) => {
 	try {
 		const Users = await User.find().select("-password");
-		return res.status(200).json({ data: Users, message: "All users received" });
+		return res.status(200).json({ message: "All users received", data: Users });
 	} catch (err) {
 		console.error(err.message);
 		return res.status(500).send();
